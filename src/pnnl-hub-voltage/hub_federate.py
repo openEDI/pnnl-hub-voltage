@@ -83,24 +83,24 @@ class HubFederate(object):
         self.register_publication()
 
     def load_component_definition(self) -> None:
-        path = Path(__file__).parent / "component_definition.json"
+        path = Path("component_definition.json")
         with open(path, "r", encoding="UTF-8") as file:
             self.component_config = json.load(file)
 
     def load_input_mapping(self):
-        path = Path(__file__).parent / "input_mapping.json"
+        path = Path("input_mapping.json")
         with open(path, "r", encoding="UTF-8") as file:
             self.inputs = json.load(file)
 
     def load_static_inputs(self):
         self.static = StaticConfig()
-        path = Path(__file__).parent / "static_inputs.json"
+        path = Path("static_inputs.json")
         with open(path, "r", encoding="UTF-8") as file:
             config = json.load(file)
 
         self.static.name = config["name"]
         self.static.max_itr = config["max_itr"]
-        self.static.t_steps = config["number_of_timesteps"]
+        self.static.t_steps = config.get("number_of_timesteps", config.get("t_steps"))
 
     def initilize(self, broker_config) -> None:
         self.info = h.helicsCreateFederateInfo()
@@ -145,7 +145,7 @@ class HubFederate(object):
         all_v = VoltagesMagnitude(ids=[], values=[], time=0)
         if self.sub.v0.is_updated():
             logger.debug("area 1 updated")
-            v = VoltagesMagnitude.parse_obj(self.sub.v0.json)
+            v = VoltagesMagnitude.model_validate(self.sub.v0.json)
             logger.debug(v)
             all_v.time = v.time
             all_v.values += v.values
@@ -153,7 +153,7 @@ class HubFederate(object):
 
         if self.sub.v1.is_updated():
             logger.debug("area 2 updated")
-            v = VoltagesMagnitude.parse_obj(self.sub.v1.json)
+            v = VoltagesMagnitude.model_validate(self.sub.v1.json)
             logger.debug(v)
             all_v.time = v.time
             all_v.values += v.values
@@ -161,7 +161,7 @@ class HubFederate(object):
 
         if self.sub.v2.is_updated():
             logger.debug("area 3 updated")
-            v = VoltagesMagnitude.parse_obj(self.sub.v2.json)
+            v = VoltagesMagnitude.model_validate(self.sub.v2.json)
             logger.debug(v)
             all_v.time = v.time
             all_v.values += v.values
@@ -169,7 +169,7 @@ class HubFederate(object):
 
         if self.sub.v3.is_updated():
             logger.debug("area 4 updated")
-            v = VoltagesMagnitude.parse_obj(self.sub.v3.json)
+            v = VoltagesMagnitude.model_validate(self.sub.v3.json)
             logger.debug(v)
             all_v.time = v.time
             all_v.values += v.values
@@ -177,7 +177,7 @@ class HubFederate(object):
 
         if self.sub.v4.is_updated():
             logger.debug("area 5 updated")
-            v = VoltagesMagnitude.parse_obj(self.sub.v4.json)
+            v = VoltagesMagnitude.model_validate(self.sub.v4.json)
             logger.debug(v)
             all_v.time = v.time
             all_v.values += v.values
@@ -185,7 +185,7 @@ class HubFederate(object):
 
         logger.debug(all_v)
         for area in range(6):
-            self.pub_area_voltages[area].publish(all_v.json())
+            self.pub_area_voltages[area].publish(all_v.model_dump_json())
 
     def run(self) -> None:
         logger.info(f"Federate connected: {datetime.now()}")
@@ -199,7 +199,7 @@ class HubFederate(object):
 
         granted_time = 0
         logger.debug("Step 0: Starting Time/Itr Loop")
-        while granted_time <= self.static.t_steps:
+        while granted_time < self.static.t_steps:
             request_time = granted_time + update_interval
             logger.debug("Step 1: Publishing initial values")
             itr_flag = itr_need

@@ -1,6 +1,6 @@
 {
     "directory": "hub_voltage",
-    "execute_function": "python hub_federate.py",
+    "execute_function": "python -m src.pnnl-hub-voltage.hub_federate",
     "static_inputs": [
         {
             "type": "",
