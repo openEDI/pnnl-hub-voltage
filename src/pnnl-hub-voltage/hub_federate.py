@@ -84,23 +84,29 @@ class HubFederate(object):
 
     def load_component_definition(self) -> None:
         path = Path("component_definition.json")
+        if not path.exists():
+            path = Path(__file__).parent / "component_definition.json"
         with open(path, "r", encoding="UTF-8") as file:
             self.component_config = json.load(file)
 
     def load_input_mapping(self):
         path = Path("input_mapping.json")
+        if not path.exists():
+            path = Path(__file__).parent / "input_mapping.json"
         with open(path, "r", encoding="UTF-8") as file:
             self.inputs = json.load(file)
 
     def load_static_inputs(self):
         self.static = StaticConfig()
         path = Path("static_inputs.json")
+        if not path.exists():
+            path = Path(__file__).parent / "static_inputs.json"
         with open(path, "r", encoding="UTF-8") as file:
             config = json.load(file)
 
         self.static.name = config["name"]
         self.static.max_itr = config["max_itr"]
-        self.static.t_steps = config.get("number_of_timesteps", config.get("t_steps"))
+        self.static.t_steps = config.get("number_of_timesteps", config.get("t_steps", 1))
 
     def initilize(self, broker_config) -> None:
         self.info = h.helicsCreateFederateInfo()
@@ -197,10 +203,10 @@ class HubFederate(object):
         update_interval = int(h.helicsFederateGetTimeProperty(
             self.fed, h.HELICS_PROPERTY_TIME_PERIOD))
 
-        granted_time = 0
+        granted_time = 0.0
         logger.debug("Step 0: Starting Time/Itr Loop")
-        while granted_time < self.static.t_steps:
-            request_time = granted_time + update_interval
+        while True:
+            request_time = granted_time + 1.0
             logger.debug("Step 1: Publishing initial values")
             itr_flag = itr_need
             self.publish_all()
@@ -212,10 +218,21 @@ class HubFederate(object):
                 logger.debug(f"\tgranted time = {granted_time}")
                 logger.debug(f"\titr status = {itr_status}")
 
+                if granted_time >= h.HELICS_TIME_MAXTIME:
+                    break
+
+                if (
+                    granted_time > 0.0
+                    and itr == 0
+                    and not self.sub.v0.is_updated()
+                ):
+                    logger.info("ADMM disconnected. Exiting loop.")
+                    granted_time = h.HELICS_TIME_MAXTIME
+                    break
+
                 logger.debug("Step 3: checking if next step")
                 if itr_status == h.helics_iteration_result_next_step:
                     logger.debug(f"\titr next = {itr}")
-                    itr_flag = itr_stop
                     break
 
                 logger.debug("Step 4: update iteration")
@@ -231,6 +248,9 @@ class HubFederate(object):
                 logger.debug("Step 6: publish all values")
                 self.publish_all()
                 itr_flag = itr_need
+            
+            if granted_time >= h.HELICS_TIME_MAXTIME:
+                break
 
         self.stop()
 
