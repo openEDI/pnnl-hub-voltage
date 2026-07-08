@@ -282,6 +282,8 @@ class TestRun:
 
         def time_iterative(fed_obj, request_time, itr_flag):
             call_count[0] += 1
+            if request_time > 1.0:
+                return (mock_helics.HELICS_TIME_MAXTIME, "next_step")
             # After max_itr iterations, the code sets itr_flag to no_iteration
             # and calls continue (which re-enters the while True loop).
             # On that call, return next_step to break out.

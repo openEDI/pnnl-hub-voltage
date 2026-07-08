@@ -98,6 +98,7 @@ def mock_helics():
     helics.helics_iteration_request_iterate_if_needed = "iterate_if_needed"
     helics.helics_iteration_request_no_iteration = "no_iteration"
     helics.helics_iteration_result_next_step = "next_step"
+    helics.HELICS_TIME_MAXTIME = 9223372036.854774
 
     # helicsCreateFederateInfo -> returns a mock info object
     mock_info = MagicMock()
