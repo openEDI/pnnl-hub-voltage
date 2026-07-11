@@ -46,10 +46,9 @@ def hub_mod(mock_helics):
 
 class TestComponentParameters:
     def test_valid_construction(self, hub_mod):
-        cp = hub_mod.ComponentParameters(name="hub", max_itr=10, t_steps=50)
+        cp = hub_mod.ComponentParameters(name="hub", max_itr=10)
         assert cp.name == "hub"
         assert cp.max_itr == 10
-        assert cp.t_steps == 50
 
 
 # ===========================================================================
@@ -162,7 +161,6 @@ class TestHubFederateInit:
     def test_loads_static_inputs(self, hub_federate, static_inputs_json):
         assert hub_federate.static.name == static_inputs_json["name"]
         assert hub_federate.static.max_itr == static_inputs_json["max_itr"]
-        assert hub_federate.static.t_steps == static_inputs_json["number_of_timesteps"]
 
     def test_loads_input_mapping(self, hub_federate, input_mapping_json):
         assert hub_federate.inputs == input_mapping_json
@@ -265,8 +263,8 @@ class TestRun:
         """With max_itr=3 and always-iterating status, inner loop runs exactly max_itr times per outer step."""
         from oedisi.types.common import BrokerConfig
 
-        # Override static_inputs to have max_itr=3, t_steps=1
-        static = {"name": "test", "max_itr": 3, "number_of_timesteps": 1}
+        # Override static_inputs to have max_itr=3
+        static = {"name": "test", "max_itr": 3}
         (tmp_package_dir / "static_inputs.json").write_text(json.dumps(static))
 
         broker = BrokerConfig(broker_ip="127.0.0.1")

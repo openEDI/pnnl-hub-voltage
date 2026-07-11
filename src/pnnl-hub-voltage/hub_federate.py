@@ -55,13 +55,11 @@ def xarray_to_powers_cart(data, **kwargs):
 class ComponentParameters(BaseModel):
     name: str
     max_itr: int
-    t_steps: int = 1
 
 
 class StaticConfig(object):
     name: str
     max_itr: int
-    t_steps: int
 
 
 class Subscriptions(object):
@@ -106,7 +104,6 @@ class HubFederate(object):
 
         self.static.name = config["name"]
         self.static.max_itr = config["max_itr"]
-        self.static.t_steps = config.get("number_of_timesteps", config.get("t_steps", 1))
 
     def initilize(self, broker_config) -> None:
         self.info = h.helicsCreateFederateInfo()
