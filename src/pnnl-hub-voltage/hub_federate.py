@@ -55,11 +55,13 @@ def xarray_to_powers_cart(data, **kwargs):
 class ComponentParameters(BaseModel):
     name: str
     max_itr: int
+    number_of_timesteps: int = 0
 
 
 class StaticConfig(object):
     name: str
     max_itr: int
+    number_of_timesteps: int = 0
 
 
 class Subscriptions(object):
@@ -104,6 +106,7 @@ class HubFederate(object):
 
         self.static.name = config["name"]
         self.static.max_itr = config["max_itr"]
+        self.static.number_of_timesteps = config.get("number_of_timesteps", 0)
 
     def initilize(self, broker_config) -> None:
         self.info = h.helicsCreateFederateInfo()
@@ -203,6 +206,13 @@ class HubFederate(object):
         granted_time = 0.0
         logger.debug("Step 0: Starting Time/Itr Loop")
         while True:
+            if (
+                self.static.number_of_timesteps > 0
+                and granted_time >= self.static.number_of_timesteps
+            ):
+                logger.info(f"Reached end time {self.static.number_of_timesteps}. Exiting.")
+                break
+
             request_time = granted_time + 1.0
             logger.debug("Step 1: Publishing initial values")
             itr_flag = itr_need
@@ -216,15 +226,6 @@ class HubFederate(object):
                 logger.debug(f"\titr status = {itr_status}")
 
                 if granted_time >= h.HELICS_TIME_MAXTIME:
-                    break
-
-                if (
-                    granted_time > 0.0
-                    and itr == 0
-                    and not self.sub.v0.is_updated()
-                ):
-                    logger.info("ADMM disconnected. Exiting loop.")
-                    granted_time = h.HELICS_TIME_MAXTIME
                     break
 
                 logger.debug("Step 3: checking if next step")
