@@ -69,8 +69,11 @@ def input_mapping_json():
 def component_definition_json():
     return {
         "directory": "hub_voltage",
-        "execute_function": "python hub_federate.py",
-        "static_inputs": [{"type": "", "port_id": "max_itr"}],
+        "execute_function": "python -m src.pnnl-hub-voltage.hub_federate",
+        "static_inputs": [
+            {"type": "", "port_id": "max_itr"},
+            {"type": "", "port_id": "number_of_timesteps"},
+        ],
         "dynamic_inputs": [
             {"type": "VoltagesMagnitude", "port_id": f"sub_v{i}", "optional": True}
             for i in range(5)

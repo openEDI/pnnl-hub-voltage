@@ -46,7 +46,7 @@ def hub_mod(mock_helics):
 
 class TestComponentParameters:
     def test_valid_construction(self, hub_mod):
-        cp = hub_mod.ComponentParameters(name="hub", max_itr=10)
+        cp = hub_mod.ComponentParameters(name="hub", max_itr=10, number_of_timesteps=10)
         assert cp.name == "hub"
         assert cp.max_itr == 10
 

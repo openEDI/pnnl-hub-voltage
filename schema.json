@@ -1,6 +1,4 @@
 {
-  "title": "ComponentParameters",
-  "type": "object",
   "properties": {
     "name": {
       "title": "Name",
@@ -9,10 +7,17 @@
     "max_itr": {
       "title": "Max Itr",
       "type": "integer"
+    },
+    "number_of_timesteps": {
+      "title": "Number Of Timesteps",
+      "type": "integer"
     }
   },
   "required": [
     "name",
-    "max_itr"
-  ]
+    "max_itr",
+    "number_of_timesteps"
+  ],
+  "title": "ComponentParameters",
+  "type": "object"
 }

@@ -55,7 +55,7 @@ def xarray_to_powers_cart(data, **kwargs):
 class ComponentParameters(BaseModel):
     name: str
     max_itr: int
-    number_of_timesteps: int = 0
+    number_of_timesteps: int
 
 
 class StaticConfig(object):
@@ -260,10 +260,6 @@ class HubFederate(object):
 
 
 def run_simulator(broker_config: BrokerConfig):
-    #    schema = ComponentParameters.schema_json(indent=2)
-    #    with open("./hub_voltage/hub_voltage_schema.json", "w") as f:
-    #        f.write(schema)
-    #
     sfed = HubFederate(broker_config)
     sfed.run()
 
